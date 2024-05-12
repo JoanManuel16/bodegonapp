@@ -40,6 +40,7 @@ dependencies:
   shared_preferences: ^2.2.3
   permission_handler: ^11.3.1
   qrscan: ^0.3.3
+  http: ^1.2.0
 
 dev_dependencies:
   flutter_test:

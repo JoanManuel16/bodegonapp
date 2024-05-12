@@ -1,5 +1,6 @@
+import 'package:bodegonapp/widgets/cart.dart';
 import 'package:bodegonapp/widgets/drawer.dart';
-import 'package:bodegonapp/widgets/listaProducto.dart';
+import 'package:bodegonapp/widgets/productosW.dart';
 import 'package:flutter/material.dart';
 
 class MainFrame extends StatefulWidget {
@@ -13,13 +14,17 @@ class _MainFrameState extends State<MainFrame> {
    int _currentIndex = 0;
 
   final List<Widget> _pages = [
-    const MainFrame(), // Página 1
-    const MainFrame(), // Página 2
+     ProductosWidget(), // Página 1
   ];
   @override
   Widget build(BuildContext context) {
     
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+      child: const Icon(Icons.check_circle_sharp),
+        onPressed: (){
+
+      }),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) {

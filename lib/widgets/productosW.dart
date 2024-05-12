@@ -2,56 +2,96 @@ import 'package:bodegonapp/db/db.dart';
 import 'package:bodegonapp/models/productor.dart';
 import 'package:flutter/material.dart';
 
-class ProductosWidget extends StatelessWidget {
-  const ProductosWidget({super.key});
+class ProductosWidget extends StatefulWidget {
+  
+  @override
+  State<ProductosWidget> createState() => _ProductosWidgetState();
+}
 
+class _ProductosWidgetState extends State<ProductosWidget> {
+  Future<List<Producto>>?_data;
+    String searchString = ''; // Variable para almacenar la cadena de búsqueda
   // Método para obtener los productos (simulado aquí)
   Future<List<Producto>> obtenerProductos() async {
     return await DB.getAllProducto();
   }
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<List<Producto>>(
-      future: obtenerProductos(),
-      builder: (BuildContext context, AsyncSnapshot<List<Producto>> snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          // Muestra el círculo de progreso mientras carga
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        } else if (snapshot.hasError) {
-          // Manejo de errores si ocurren
-          return const Center(
-            child: Icon(Icons.error_sharp),
-          );
-        } else if (!snapshot.hasData) {
-          // No hay datos disponibles
-          return const Center(
-            child: Icon(Icons.content_paste_off)
-          );
-        } else {
-          // Datos cargados, muestra los productos en tarjetas
-          final List<Producto> productos = snapshot.data!;
-          return ListView.builder(
-            itemCount: productos.length,
-            itemBuilder: (BuildContext context, int index) {
-              final producto = productos[index];
-              return Card(
-                child: ListTile(
-                  title: Text(producto.nombre),
-                  subtitle: Text('Precio: \$${producto.precioIndividual}'),
-                  onTap: () {
-                    _showAddToCartDialog(context, producto);
-                  },
-                ),
-              );
-            },
-          );
-        }
-      },
-    );
+@override
+  void initState() {
+    _data=obtenerProductos();
+    super.initState();
   }
+  @override
+ Widget build(BuildContext context) {
+  return RefreshIndicator(
+    onRefresh: () async {
+      // Aquí puedes realizar la lógica para actualizar la lista de productos
+      setState(() {
+        // Por ejemplo, puedes volver a cargar los datos desde la fuente de datos
+        _data = obtenerProductos(); // Suponiendo que fetchData() es la función que obtiene los datos
+      });
+    },
+    child: Column(
+      children: [
+        // Agrega un TextField para la búsqueda
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: TextField(
+            onChanged: (value) {
+              setState(() {
+                searchString = value; // Actualiza la cadena de búsqueda
+              });
+            },
+            decoration: const InputDecoration(
+              prefixIcon: Icon(Icons.search),
+              hintText: 'Buscar productos',
+            ),
+          ),
+        ),
+        Expanded(
+          child: FutureBuilder<List<Producto>>(
+            future: _data,
+            builder: (BuildContext context, AsyncSnapshot<List<Producto>> snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              } else if (snapshot.hasError) {
+                return const Center(
+                  child: Icon(Icons.error_sharp),
+                );
+              } else if (!snapshot.hasData) {
+                return const Center(child: Icon(Icons.content_paste_off));
+              } else {
+                List<Producto> productos = snapshot.data!;
+                // Filtra la lista de productos según la cadena de búsqueda
+                List<Producto> filteredProductos = productos.where((producto) =>
+                  producto.nombre.toLowerCase().contains(searchString.toLowerCase())
+                ).toList();
+
+                return ListView.builder(
+                  itemCount: filteredProductos.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    final producto = filteredProductos[index];
+                    return Card(
+                      child: ListTile(
+                        title: Text(producto.nombre),
+                        subtitle: Text('Precio: \$${producto.precioIndividual}'),
+                        onTap: () {
+                          _showAddToCartDialog(context, producto);
+                        },
+                      ),
+                    );
+                  },
+                );
+              }
+            },
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
 
   // Función para mostrar el diálogo de agregar al carrito
   void _showAddToCartDialog(BuildContext context, Producto producto) {
@@ -76,7 +116,7 @@ class ProductosWidget extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () {
-                if(cantidad!=0 && cantidad>0){
+                if (cantidad != 0 && cantidad > 0) {
                   //logica aqui
                 }
                 Navigator.of(context).pop();

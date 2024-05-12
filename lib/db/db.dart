@@ -10,7 +10,10 @@ class DB {
       join(await getDatabasesPath(), 'sculptures.db'),
       onCreate: (db, version) async {
         await db.execute(
-          "CREATE TABLE producto (id INTEGER PRIMARY KEY, codigo TEXT, idGrupo INTEGER, um TEXT, precioIndividual DOUBLE,  cantidad INTEGER,  nombre TEXT,  tipoMovimiento TEXT,  Destino TEXT,  nombrePersona TEXT,  fecha TEXT)",
+          "CREATE TABLE producto (id INTEGER PRIMARY KEY, codigo TEXT, idGrupo INTEGER, um TEXT, precioIndividual DOUBLE,  cantidad INTEGER,  nombre TEXT,  tipoMovimiento TEXT,  destino TEXT,  nombrePersona TEXT,  fecha TEXT)",
+        );
+        await db.execute(
+          "CREATE TABLE cart (id INTEGER PRIMARY KEY, codigo TEXT, idGrupo INTEGER, um TEXT, precioIndividual DOUBLE,  cantidad INTEGER,  nombre TEXT,  tipoMovimiento TEXT,  destino TEXT,  nombrePersona TEXT,  fecha TEXT)",
         );
         await db.execute(
           "CREATE TABLE cierre (id_inicio INTEGER PRIMARY KEY, cierre INTEGER , fecha TEXT)",
@@ -38,10 +41,37 @@ class DB {
         provedoresMap.length, (i) => provedoresMap[i]['moneda']);
   }
 
+  static Future<void> updateCantidad(Producto p) async {
+    Database database = await _openDB();
+    await database
+        .update("producto", p.toMap(), where: 'codigo', whereArgs: [p.codigo]);
+  }
+
   static Future<List<Producto>> getAllProducto() async {
     Database database = await _openDB();
     final List<Map<String, dynamic>> provedoresMap =
         await database.query("producto");
+    List<Producto> pro = List.empty(growable: true);
+    for (var element in provedoresMap) {
+      pro.add(Producto(
+        codigo: element['codigo'],
+        idGrupo: element['idGrupo'],
+        um: element['um'],
+        precioIndividual: element['precioIndividual'],
+        cantidad: element['cantidad'],
+        nombre: element['nombre'],
+        nombrePersona: element['nombrePersona'],
+        fecha: element['fecha'],
+        destino: element['destino'],
+      ));
+    }
+    return pro;
+  }
+
+  static Future<List<Producto>> getAllCart() async {
+    Database database = await _openDB();
+    final List<Map<String, dynamic>> provedoresMap =
+        await database.query("cart");
 
     return List.generate(
         provedoresMap.length,
@@ -61,6 +91,12 @@ class DB {
     Database database = await _openDB();
 
     await database.insert("monedas", mon.toMap());
+  }
+
+  static Future<void> insertCart(Producto pro) async {
+    Database database = await _openDB();
+
+    await database.insert("cart", pro.toMap());
   }
 
   static Future<void> insertarTarjeta(Tarjeta tar) async {
