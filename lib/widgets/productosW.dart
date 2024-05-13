@@ -75,7 +75,7 @@ class _ProductosWidgetState extends State<ProductosWidget> {
                     return Card(
                       child: ListTile(
                         title: Text(producto.nombre),
-                        subtitle: Text('Precio: \$${producto.precioIndividual}'),
+                        subtitle: Text('Precio: \$${producto.precioIndividual}\n Cantidad: ${producto.cantidad}'),
                         onTap: () {
                           _showAddToCartDialog(context, producto);
                         },
@@ -115,9 +115,13 @@ class _ProductosWidgetState extends State<ProductosWidget> {
           ),
           actions: [
             TextButton(
-              onPressed: () {
+              onPressed: () async {
                 if (cantidad != 0 && cantidad > 0) {
-                  //logica aqui
+                  int aux= producto.cantidad;
+                  producto.cantidad=cantidad;
+                 await DB.insertCart(producto);
+                 producto.cantidad=aux-producto.cantidad;
+                await DB.updateCantidad(producto);
                 }
                 Navigator.of(context).pop();
               },

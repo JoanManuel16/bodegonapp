@@ -159,7 +159,7 @@ Drawer drawer(context) {
             leading: const Icon(Icons.qr_code_2_sharp),
             title: const Text("Actualizar Tipo de cambio desde QR"),
             onTap: () async {
-              await DB.insertMoneda(Moneda("EUR", 290.0));
+              await DB.insertMoneda(Moneda("USD", 290.0));
             },
           ),
           ListTile(

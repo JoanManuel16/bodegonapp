@@ -1,6 +1,7 @@
 import 'package:bodegonapp/models/moneda.dart';
 import 'package:bodegonapp/models/productor.dart';
 import 'package:bodegonapp/models/tarjeta.dart';
+import 'package:bodegonapp/models/venta.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
@@ -25,10 +26,13 @@ class DB {
           "CREATE TABLE tarjetas (id_tarjeta INTEGER PRIMARY KEY, id_moneda INTEGER , numTarjeta TEXT)",
         );
         await db.execute(
-          "CREATE TABLE venta (id_venta INTEGER PRIMARY KEY, id_producto INTEGER , cantidad INTEGER)",
+          "CREATE TABLE venta (id_venta INTEGER PRIMARY KEY, codigo TEXT , cantidad INTEGER,moneda TEXT)",
+        );
+         await db.execute(
+          "CREATE TABLE ventaTarjeta (id_venta INTEGER PRIMARY KEY, codigo TEXT , cantidad INTEGER,moneda TEXT,id_tarjeta INTEGER)",
         );
       },
-      version: 1,
+      version: 2,
     );
   }
 
@@ -41,11 +45,11 @@ class DB {
         provedoresMap.length, (i) => provedoresMap[i]['moneda']);
   }
 
-  static Future<void> updateCantidad(Producto p) async {
-    Database database = await _openDB();
-    await database
-        .update("producto", p.toMap(), where: 'codigo', whereArgs: [p.codigo]);
-  }
+ static Future<void> updateCantidad(Producto p) async {
+  Database database = await _openDB();
+  await database.update("producto", p.toMap(), where: 'codigo = ?', whereArgs: [p.codigo]);
+}
+
 
   static Future<List<Producto>> getAllProducto() async {
     Database database = await _openDB();
@@ -110,4 +114,21 @@ class DB {
       await database.insert("producto", producto.toMap());
     }
   }
+  static Future<void> insertarVenta(List<Venta> pro) async {
+    Database database = await _openDB();
+    for (var producto in pro) {
+      await database.insert("venta", producto.toJson());
+    }
+  }
+   static Future<void> insertarVentaT(List<Venta> pro) async {
+    Database database = await _openDB();
+    for (var producto in pro) {
+      await database.insert("ventaTarjeta", producto.toJsonT());
+    }
+  }
+  static Future<void> eliminarCart() async {
+  Database database = await _openDB();
+  await database.delete("cart");
+}
+
 }
